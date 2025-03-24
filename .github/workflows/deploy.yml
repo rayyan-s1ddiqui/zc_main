@@ -58,7 +58,8 @@ jobs:
           aws deploy create-deployment \
           --application-name $CODEDEPLOY_APP \
           --deployment-group-name $CODEDEPLOY_GROUP \
-          --revision "revisionType=AppSpecContent,appSpecContent={\"content\":\"$(cat appspec.yml | jq -Rsa .)\"}" \
           --deployment-config-name CodeDeployDefault.ECSAllAtOnce \
+          --revision "revisionType=AppSpecContent,appSpecContent={\"content\":\"$(jq -Rs . < appspec.yml)\"}" \
           --description "Deploying new revision" \
           --file-exists-behavior OVERWRITE
+
