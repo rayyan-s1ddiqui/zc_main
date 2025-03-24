@@ -11,8 +11,8 @@ env:
   ECR_REPOSITORY: pharmacy-repo
   ECS_CLUSTER: pharmacy-cluster
   ECS_SERVICE: pharmacy-service
-  CODEDEPLOY_APP: pharmacy-codedeploy-app
-  CODEDEPLOY_GROUP: pharmacy-deployment-group
+  CODEDEPLOY_APP: "pharmacy-codedeploy-app"
+  CODEDEPLOY_GROUP: "pharmacy-deployment-group"
   IMAGE_TAG: latest
 
 jobs:
@@ -53,6 +53,6 @@ jobs:
       - name: Trigger Deployment in CodeDeploy
         run: |
           aws deploy create-deployment \
-          --application-name "$CODEDEPLOY_APP" \
-          --deployment-group-name "$CODEDEPLOY_GROUP" \
+          --application-name $CODEDEPLOY_APP \
+          --deployment-group-name $CODEDEPLOY_GROUP \
           --revision "revisionType=AppSpecContent,appSpecContent={\"content\":\"version: 0.0\\nResources:\\n  - TargetService:\\n      Type: AWS::ECS::Service\\n      Properties:\\n        TaskDefinition: \\\"$NEW_TASK_DEF_ARN\\\"\\n        LoadBalancerInfo:\\n          ContainerName: \\\"pharmacy-container\\\"\\n          ContainerPort: 80\\n\"}"
