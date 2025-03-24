@@ -55,4 +55,4 @@ jobs:
           aws deploy create-deployment \
           --application-name $CODEDEPLOY_APP \
           --deployment-group-name $CODEDEPLOY_GROUP \
-          --revision "revisionType=AppSpecContent,appSpecContent={\"content\":\"version: 0.0\\nResources:\\n  - TargetService:\\n      Type: AWS::ECS::Service\\n      Properties:\\n        TaskDefinition: \\\"$NEW_TASK_DEF_ARN\\\"\\n        LoadBalancerInfo:\\n          ContainerName: \\\"pharmacy-container\\\"\\n          ContainerPort: 80\\n\"}"
+          --revision revisionType=AppSpecContent,appSpecContent={\"content\":\"version: 0.0\\nResources:\\n  - TargetService:\\n      Type: AWS::ECS::Service\\n      Properties:\\n        TaskDefinition: \\\"$NEW_TASK_DEF_ARN\\\"\\n        LoadBalancerInfo:\\n          ContainerName: \\\"pharmacy-container\\\"\\n          ContainerPort: 80\\n\"}
