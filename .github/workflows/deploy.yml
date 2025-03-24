@@ -1,4 +1,4 @@
-name: Deploy to AWS ECS with CodeDeploy
+name: Deploy to AWS ECS
 
 on:
   push:
@@ -11,13 +11,11 @@ env:
   ECR_REPOSITORY: pharmacy-repo
   ECS_CLUSTER: pharmacy-cluster
   ECS_SERVICE: pharmacy-service
-  CODEDEPLOY_APP: pharmacy-codedeploy-app
-  CODEDEPLOY_GROUP: pharmacy-deployment-group
   IMAGE_TAG: latest
 
 jobs:
-  build-and-deploy:
-    name: Build, Push & Deploy via CodeDeploy
+  deploy:
+    name: Deploy to AWS ECS
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -39,27 +37,17 @@ jobs:
           IMAGE_URI=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPOSITORY:$IMAGE_TAG
           docker build -t $IMAGE_URI .
           docker push $IMAGE_URI
-          echo "IMAGE_URI=$IMAGE_URI" >> $GITHUB_ENV
 
-      - name: Register New Task Definition
+      - name: Register new ECS task definition
         run: |
-          TASK_DEF_ARN=$(aws ecs describe-services --cluster $ECS_CLUSTER --services $ECS_SERVICE --query "services[0].taskDefinition" --output text)
-
-          NEW_TASK_DEF=$(aws ecs describe-task-definition --task-definition $TASK_DEF_ARN --query "taskDefinition" --output json | jq 'del(.taskDefinitionArn, .revision, .status, .requiresAttributes, .compatibilities, .registeredAt, .registeredBy)')
-
+          TASK_DEFINITION_ARN=$(aws ecs describe-services --cluster $ECS_CLUSTER --services $ECS_SERVICE --query "services[0].taskDefinition" --output text)
+          NEW_TASK_DEF=$(aws ecs describe-task-definition --task-definition $TASK_DEFINITION_ARN --query "taskDefinition" --output json | jq 'del(.taskDefinitionArn, .revision, .status, .requiresAttributes, .compatibilities, .registeredAt, .registeredBy)')
           echo "$NEW_TASK_DEF" > task-def.json
-          sed -i "s|<IMAGE>|$IMAGE_URI|g" task-def.json
-
+          sed -i "s|<IMAGE>|$AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPOSITORY:$IMAGE_TAG|g" task-def.json
           NEW_TASK_DEF_ARN=$(aws ecs register-task-definition --cli-input-json file://task-def.json --query "taskDefinition.taskDefinitionArn" --output text)
+
           echo "NEW_TASK_DEF_ARN=$NEW_TASK_DEF_ARN" >> $GITHUB_ENV
 
-      - name: Create Deployment in CodeDeploy
+      - name: Update ECS Service
         run: |
-         aws deploy create-deployment \
-          --application-name $CODEDEPLOY_APP \
-          --deployment-group-name $CODEDEPLOY_GROUP \
-          --deployment-config-name CodeDeployDefault.ECSAllAtOnce \
-          --revision "{\"revisionType\":\"AppSpecContent\",\"appSpecContent\":{\"content\":\"$(cat appspec.yml | jq -Rs .)\"}}" \
-          --description "Deploying new revision" \
-          --file-exists-behavior OVERWRITE
-
+          aws ecs update-service --cluster $ECS_CLUSTER --service $ECS_SERVICE --task-definition $NEW_TASK_DEF_ARN --force-new-deployment
