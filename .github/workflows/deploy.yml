@@ -52,9 +52,9 @@ jobs:
         run: |
           aws ecs update-service --cluster $ECS_CLUSTER --service $ECS_SERVICE --force-new-deployment
 
-      - name: Trigger CodeDeploy Deployment
+      - name: Trigger Deployment in CodeDeploy
         run: |
           aws deploy create-deployment \
-            --application-name $CODEDEPLOY_APP \
-            --deployment-group-name $CODEDEPLOY_GROUP \
-            --revision revisionType=AppSpecContent,appSpecContent="{\"version\":\"0.0\",\"resources\":[{\"TargetService\":{\"Type\":\"AWS::ECS::Service\",\"Properties\":{\"TaskDefinition\":\"$ECS_SERVICE\",\"LoadBalancerInfo\":{\"ContainerName\":\"app\",\"ContainerPort\":80}}}}]}"
+          --application-name $CODEDEPLOY_APP_NAME \
+          --deployment-group-name $CODEDEPLOY_DEPLOYMENT_GROUP \
+          --revision file://$APPSPEC_FILE
