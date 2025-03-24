@@ -11,11 +11,13 @@ env:
   ECR_REPOSITORY: pharmacy-repo
   ECS_CLUSTER: pharmacy-cluster
   ECS_SERVICE: pharmacy-service
+  CODEDEPLOY_APP: pharmacy-codedeploy-app
+  CODEDEPLOY_GROUP: pharmacy-deployment-group
   IMAGE_TAG: latest
 
 jobs:
   deploy:
-    name: Deploy to AWS ECS
+    name: Deploy to AWS ECS with CodeDeploy
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -48,6 +50,9 @@ jobs:
 
           echo "NEW_TASK_DEF_ARN=$NEW_TASK_DEF_ARN" >> $GITHUB_ENV
 
-      - name: Update ECS Service
+      - name: Trigger Deployment in CodeDeploy
         run: |
-          aws ecs update-service --cluster $ECS_CLUSTER --service $ECS_SERVICE --task-definition $NEW_TASK_DEF_ARN --force-new-deployment
+          aws deploy create-deployment \
+          --application-name $CODEDEPLOY_APP \
+          --deployment-group-name $CODEDEPLOY_GROUP \
+          --revision revisionType=AppSpecContent,appSpecContent="{\"content\":\"version: 0.0\nResources:\n  - TargetService:\n      Type: AWS::ECS::Service\n      Properties:\n        TaskDefinition: '$NEW_TASK_DEF_ARN'\n        LoadBalancerInfo:\n          ContainerName: 'pharmacy-container'\n          ContainerPort: 80\n\"}"
