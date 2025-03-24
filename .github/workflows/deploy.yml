@@ -6,13 +6,13 @@ on:
       - dev
 
 env:
-  AWS_REGION: "us-east-1"  # Update this if using a different region
-  ECR_REPOSITORY: "pharmacy-repo"  # Keep the same name
-  ECS_CLUSTER: "pharmacy-cluster"  # Keep the same name
-  ECS_SERVICE: "pharmacy-service"  # Keep the same name
-  CODEDEPLOY_APP: "pharmacy-codedeploy-app"  # Keep the same name
-  CODEDEPLOY_GROUP: "pharmacy-deployment-group"  # Keep the same name
-  IMAGE_TAG: "latest"
+  AWS_REGION: us-east-1  # Update this if using a different region
+  ECR_REPOSITORY: pharmacy-repo  # Keep the same name
+  ECS_CLUSTER: pharmacy-cluster  # Keep the same name
+  ECS_SERVICE: pharmacy-service  # Keep the same name
+  CODEDEPLOY_APP: pharmacy-codedeploy-app  # Keep the same name
+  CODEDEPLOY_GROUP: pharmacy-deployment-group  # Keep the same name
+  IMAGE_TAG: latest
 
 jobs:
   build-and-push:
