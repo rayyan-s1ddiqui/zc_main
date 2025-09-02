@@ -70,3 +70,6 @@ yarn prettify # to prettify files # in project directory
 ```
 
 you can also lint for all files in the repo by running that command in the root folder.
+
+
+<!-- Security scan triggered at 2025-09-02 15:28:06 -->
